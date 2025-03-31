@@ -30,6 +30,7 @@ type Logger struct {
 	w          io.Writer
 	timeFormat string
 	level      Level
+	mu         sync.Mutex // Protects writing to w
 }
 
 // New returns a new [Logger].
@@ -89,6 +90,8 @@ func (l *Logger) log(level Level, msg string) {
 	)
 
 	// WriteTo drains the buffer
+	l.mu.Lock()
+	defer l.mu.Unlock()
 	buf.WriteTo(l.w) //nolint: errcheck // Just like printing
 }
 
