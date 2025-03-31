@@ -1,0 +1,6 @@
+github.com/FollowTheProcess/hue v0.5.2 h1:Ns/vO8wiwv2oXDn+QyBLcYCK0LcfXVVu31bHGTLAFHI=
+github.com/FollowTheProcess/hue v0.5.2/go.mod h1:5FD2UrxTzWi0Uc63w8ndsjqPrH4xn3Q7k7vEpINqEP4=
+golang.org/x/sys v0.31.0 h1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=
+golang.org/x/sys v0.31.0/go.mod h1:BJP2sWEmIv4KK5OTEluFJCKSidICx8ciO85XgH3Ak8k=
+golang.org/x/term v0.30.0 h1:PQ39fJZ+mfadBm0y5WlL4vlM7Sx1Hgf13sMIY2+QS9Y=
+golang.org/x/term v0.30.0/go.mod h1:NYYFdzHoI5wRh/h5tDMdMqCqPJZEuNqVR5xJLd/n67g=
