@@ -3,6 +3,7 @@ package log_test
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"sync"
 	"testing"
@@ -41,11 +42,35 @@ func TestRace(t *testing.T) {
 
 func BenchmarkLogger(b *testing.B) {
 	hue.Enabled(true) // Force colour
-	buf := &bytes.Buffer{}
+	defer hue.Enabled(false)
 
-	logger := log.New(buf, log.WithLevel(log.LevelDebug))
+	b.Run("enabled", func(b *testing.B) {
+		buf := &bytes.Buffer{}
+
+		logger := log.New(buf, log.WithLevel(log.LevelDebug))
+
+		for b.Loop() {
+			logger.Debug("A message!")
+		}
+	})
+
+	b.Run("disabled", func(b *testing.B) {
+		buf := &bytes.Buffer{}
+
+		logger := log.New(buf, log.WithLevel(log.LevelInfo))
+
+		for b.Loop() {
+			logger.Debug("A message!")
+		}
+	})
+}
+
+func BenchmarkDiscard(b *testing.B) {
+	// Here to test that effectively nothing is done
+	// when w == io.Discard
+	logger := log.New(io.Discard, log.WithLevel(log.LevelDebug))
 
 	for b.Loop() {
-		logger.Debug("A message!")
+		logger.Debug("Nothing")
 	}
 }
