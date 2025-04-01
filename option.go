@@ -32,3 +32,13 @@ func TimeFunc(fn func() time.Time) Option {
 		l.timeFunc = fn
 	}
 }
+
+// Prefix sets a prefix for the logger.
+//
+// If set to a non-empty string, the prefix is shown on every log line prior
+// to the message and any key value pairs.
+func Prefix(prefix string) Option {
+	return func(l *Logger) {
+		l.prefix = prefix
+	}
+}

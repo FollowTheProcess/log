@@ -20,10 +20,14 @@ func TestVisual(t *testing.T) {
 
 	logger := log.New(os.Stdout, log.WithLevel(log.LevelDebug))
 
+	prefixed := log.New(os.Stdout, log.Prefix("cooking"), log.WithLevel(log.LevelDebug))
+
 	logger.Debug("Doing some debuggy things")
 	logger.Info("Logging in")
 	logger.Warn("Config file missing, falling back to defaults")
 	logger.Error("File not found")
+
+	prefixed.Warn("Pizza is burning!")
 }
 
 func TestDebug(t *testing.T) {
@@ -60,6 +64,15 @@ func TestDebug(t *testing.T) {
 			},
 			msg:  "Hello debug!",
 			want: "[TIME] DEBUG: Hello debug!\n",
+		},
+		{
+			name: "prefix",
+			options: []log.Option{
+				log.WithLevel(log.LevelDebug),
+				log.Prefix("building"),
+			},
+			msg:  "Hello debug!",
+			want: "[TIME] DEBUG building: Hello debug!\n",
 		},
 	}
 

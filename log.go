@@ -7,7 +7,6 @@ package log
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"sync"
 	"sync/atomic"
@@ -19,6 +18,7 @@ import (
 // Styles.
 const (
 	timestampStyle = hue.BrightBlack
+	prefixStyle    = hue.BrightBlack | hue.Bold
 	debugStyle     = hue.Blue | hue.Bold
 	infoStyle      = hue.Cyan | hue.Bold
 	warnStyle      = hue.Yellow | hue.Bold
@@ -28,12 +28,13 @@ const (
 // Logger is a command line logger. It is safe to use across concurrently
 // executing goroutines.
 type Logger struct {
-	w          io.Writer        // Logs are written here, if it is [io.Discard], log methods exit early having done nothing
-	timeFunc   func() time.Time // Function called to get the current time, defaults to [time.Now] (UTC)
-	timeFormat string           // The time serialisation format, defaults to [time.RFC3339]
-	level      Level            // The level at which this logger is set
-	mu         sync.Mutex       // Protects writing to w
-	isDiscard  atomic.Bool      // w == io.Discard, cached as can only be set once via [New]
+	w          io.Writer
+	timeFunc   func() time.Time
+	timeFormat string
+	prefix     string
+	level      Level
+	mu         sync.Mutex
+	isDiscard  atomic.Bool
 }
 
 // New returns a new [Logger].
@@ -87,13 +88,16 @@ func (l *Logger) log(level Level, msg string) {
 	buf := getBuffer()
 	defer putBuffer(buf)
 
-	fmt.Fprintf(
-		buf,
-		"%s %s: %s\n",
-		timestampStyle.Text(l.timeFunc().Format(l.timeFormat)),
-		level.styled(),
-		msg,
-	)
+	buf.WriteString(timestampStyle.Text(l.timeFunc().Format(l.timeFormat)))
+	buf.WriteByte(' ')
+	buf.WriteString(level.styled())
+	if l.prefix != "" {
+		buf.WriteString(" " + prefixStyle.Text(l.prefix))
+	}
+	buf.WriteByte(':')
+	buf.WriteByte(' ')
+	buf.WriteString(msg)
+	buf.WriteByte('\n')
 
 	// WriteTo drains the buffer
 	l.mu.Lock()
@@ -101,7 +105,8 @@ func (l *Logger) log(level Level, msg string) {
 	buf.WriteTo(l.w) //nolint: errcheck // Just like printing
 }
 
-// Each log method (Debug, Info, Warn) etc.
+// Each log method (Debug, Info, Warn) etc. gets a buffer from this pool
+// so as not to keep re-allocating and destroying them.
 var bufPool = sync.Pool{
 	New: func() any {
 		return new(bytes.Buffer)
