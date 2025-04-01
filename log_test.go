@@ -5,15 +5,19 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/FollowTheProcess/hue"
 	"github.com/FollowTheProcess/log"
+	"github.com/FollowTheProcess/test"
 )
 
 func TestVisual(t *testing.T) {
 	hue.Enabled(true) // Force colour
+
 	logger := log.New(os.Stdout, log.WithLevel(log.LevelDebug))
 
 	logger.Debug("Doing some debuggy things")
@@ -24,25 +28,39 @@ func TestVisual(t *testing.T) {
 
 func TestRace(t *testing.T) {
 	buf := &bytes.Buffer{}
-	logger := log.New(buf)
+
+	// Constantly return the same time
+	fixedTime := func() time.Time {
+		fixed, err := time.Parse(time.RFC3339, "2025-04-01T13:34:03Z")
+		test.Ok(t, err)
+
+		return fixed
+	}
+
+	logger := log.New(buf, log.TimeFunc(fixedTime))
 
 	const n = 5
 
 	var wg sync.WaitGroup
 	wg.Add(n)
-	for range n {
-		go func(wg *sync.WaitGroup) {
+	for i := range n {
+		go func(wg *sync.WaitGroup, i int) {
 			defer wg.Done()
-			logger.Info(fmt.Sprintf("Something: %d", n))
-		}(&wg)
+			logger.Info(fmt.Sprintf("Something: %d", i))
+		}(&wg, i)
 	}
 
 	wg.Wait()
+
+	// Make sure they all got written, order doesn't matter because concurrency
+	got := strings.TrimSpace(buf.String())
+	lines := strings.Split(got, "\n")
+
+	test.Equal(t, len(lines), n, test.Context("expected %d log lines", n))
 }
 
 func BenchmarkLogger(b *testing.B) {
 	hue.Enabled(true) // Force colour
-	defer hue.Enabled(false)
 
 	b.Run("enabled", func(b *testing.B) {
 		buf := &bytes.Buffer{}
