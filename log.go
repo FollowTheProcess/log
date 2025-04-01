@@ -18,8 +18,8 @@ import (
 
 // Styles.
 const (
-	timestampStyle = hue.BrightBlack
-	prefixStyle    = hue.BrightBlack | hue.Bold
+	timestampStyle = hue.Dim
+	prefixStyle    = hue.Dim | hue.Bold
 	keyStyle       = hue.Magenta
 	debugStyle     = hue.Blue | hue.Bold
 	infoStyle      = hue.Cyan | hue.Bold
