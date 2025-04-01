@@ -26,6 +26,62 @@ func TestVisual(t *testing.T) {
 	logger.Error("File not found")
 }
 
+func TestDebug(t *testing.T) {
+	hue.Enabled(false) // Force no color
+
+	// Constantly return the same time
+	fixedTime := func() time.Time {
+		fixed, err := time.Parse(time.RFC3339, "2025-04-01T13:34:03Z")
+		test.Ok(t, err)
+
+		return fixed
+	}
+
+	fixedTimeString := fixedTime().Format(time.RFC3339)
+
+	tests := []struct {
+		name    string
+		msg     string
+		want    string
+		options []log.Option
+	}{
+		{
+			name: "disabled",
+			options: []log.Option{
+				log.WithLevel(log.LevelInfo),
+			},
+			msg:  "You should not see me",
+			want: "", // Debug logs should not show up if the level is info
+		},
+		{
+			name: "enabled",
+			options: []log.Option{
+				log.WithLevel(log.LevelDebug),
+			},
+			msg:  "Hello debug!",
+			want: "[TIME] DEBUG: Hello debug!\n",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			buf := &bytes.Buffer{}
+
+			// Ensure that the time is always deterministic
+			tt.options = append(tt.options, log.TimeFunc(fixedTime))
+
+			logger := log.New(buf, tt.options...)
+
+			logger.Debug(tt.msg)
+
+			got := buf.String()
+			got = strings.ReplaceAll(got, fixedTimeString, "[TIME]")
+
+			test.Diff(t, got, tt.want)
+		})
+	}
+}
+
 func TestRace(t *testing.T) {
 	buf := &bytes.Buffer{}
 
