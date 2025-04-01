@@ -29,21 +29,6 @@ const (
 	errorString = "ERROR"
 )
 
-func (l Level) String() string {
-	switch l {
-	case LevelDebug:
-		return debugString
-	case LevelInfo:
-		return infoString
-	case LevelWarn:
-		return warnString
-	case LevelError:
-		return errorString
-	default:
-		return "unknown"
-	}
-}
-
 func (l Level) styled() string {
 	switch l {
 	case LevelDebug:

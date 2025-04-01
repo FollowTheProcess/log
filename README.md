@@ -9,10 +9,14 @@
 
 Simple, fast, opinionated logging for command line applications
 
+<p align="center">
+<img src="https://github.com/FollowTheProcess/log/raw/main/docs/img/demo.gif" alt="demo">
+</p>
+
 > [!WARNING]
 > **log is in early development and is not yet ready for use**
 
-![caution](./img/caution.png)
+![caution](./docs/img/caution.png)
 
 ## Project Description
 
