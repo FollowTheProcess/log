@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/FollowTheProcess/hue"
@@ -27,10 +28,12 @@ const (
 // Logger is a command line logger. It is safe to use across concurrently
 // executing goroutines.
 type Logger struct {
-	w          io.Writer
-	timeFormat string
-	level      Level
-	mu         sync.Mutex // Protects writing to w
+	w          io.Writer        // Logs are written here, if it is [io.Discard], log methods exit early having done nothing
+	timeFunc   func() time.Time // Function called to get the current time, defaults to [time.Now] (UTC)
+	timeFormat string           // The time serialisation format, defaults to [time.RFC3339]
+	level      Level            // The level at which this logger is set
+	mu         sync.Mutex       // Protects writing to w
+	isDiscard  atomic.Bool      // w == io.Discard, cached as can only be set once via [New]
 }
 
 // New returns a new [Logger].
@@ -39,7 +42,10 @@ func New(w io.Writer, options ...Option) *Logger {
 		w:          w,
 		level:      LevelInfo,
 		timeFormat: time.RFC3339,
+		timeFunc:   now,
 	}
+
+	logger.isDiscard.Store(w == io.Discard)
 
 	for _, option := range options {
 		option(logger)
@@ -70,7 +76,7 @@ func (l *Logger) Error(msg string) {
 
 // log logs the given levelled message.
 func (l *Logger) log(level Level, msg string) {
-	if l.w == io.Discard || l.level > level {
+	if l.isDiscard.Load() || l.level > level {
 		// Do as little work as possible
 		return
 	}
@@ -127,4 +133,9 @@ func putBuffer(buf *bytes.Buffer) {
 	}
 
 	bufPool.Put(buf)
+}
+
+// now returns the current time with UTC.
+func now() time.Time {
+	return time.Now().UTC()
 }
