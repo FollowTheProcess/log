@@ -28,13 +28,13 @@ const (
 // Logger is a command line logger. It is safe to use across concurrently
 // executing goroutines.
 type Logger struct {
-	w          io.Writer
-	timeFunc   func() time.Time
-	timeFormat string
-	prefix     string
-	level      Level
-	mu         sync.Mutex
-	isDiscard  atomic.Bool
+	w          io.Writer        // Where to write logs to
+	timeFunc   func() time.Time // A function to get the current time, defaults to [time.Now] (with UTC)
+	timeFormat string           // The time format layout string, defaults to [time.RFC3339]
+	prefix     string           // Optional prefix to prepend to all log messages
+	level      Level            // The configured level of this logger, logs below this level are not shown
+	mu         sync.Mutex       // Protects w
+	isDiscard  atomic.Bool      // w == [io.Discard], cached
 }
 
 // New returns a new [Logger].
