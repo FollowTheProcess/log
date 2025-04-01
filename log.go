@@ -90,7 +90,7 @@ func (l *Logger) log(level Level, msg string) {
 	fmt.Fprintf(
 		buf,
 		"%s %s: %s\n",
-		timestampStyle.Text(time.Now().Format(l.timeFormat)),
+		timestampStyle.Text(l.timeFunc().Format(l.timeFormat)),
 		level.styled(),
 		msg,
 	)
