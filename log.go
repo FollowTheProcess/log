@@ -7,6 +7,7 @@ package log
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"sync"
 	"sync/atomic"
@@ -19,6 +20,7 @@ import (
 const (
 	timestampStyle = hue.BrightBlack
 	prefixStyle    = hue.BrightBlack | hue.Bold
+	keyStyle       = hue.Magenta
 	debugStyle     = hue.Blue | hue.Bold
 	infoStyle      = hue.Cyan | hue.Bold
 	warnStyle      = hue.Yellow | hue.Bold
@@ -56,27 +58,27 @@ func New(w io.Writer, options ...Option) *Logger {
 }
 
 // Debug writes a debug level log line.
-func (l *Logger) Debug(msg string) {
-	l.log(LevelDebug, msg)
+func (l *Logger) Debug(msg string, kv ...any) {
+	l.log(LevelDebug, msg, kv...)
 }
 
 // Info writes an info level log line.
-func (l *Logger) Info(msg string) {
-	l.log(LevelInfo, msg)
+func (l *Logger) Info(msg string, kv ...any) {
+	l.log(LevelInfo, msg, kv...)
 }
 
 // Warn writes a warning level log line.
-func (l *Logger) Warn(msg string) {
-	l.log(LevelWarn, msg)
+func (l *Logger) Warn(msg string, kv ...any) {
+	l.log(LevelWarn, msg, kv...)
 }
 
 // Error writes an error level log line.
-func (l *Logger) Error(msg string) {
-	l.log(LevelError, msg)
+func (l *Logger) Error(msg string, kv ...any) {
+	l.log(LevelError, msg, kv...)
 }
 
 // log logs the given levelled message.
-func (l *Logger) log(level Level, msg string) {
+func (l *Logger) log(level Level, msg string, kv ...any) {
 	if l.isDiscard.Load() || l.level > level {
 		// Do as little work as possible
 		return
@@ -97,6 +99,18 @@ func (l *Logger) log(level Level, msg string) {
 	buf.WriteByte(':')
 	buf.WriteByte(' ')
 	buf.WriteString(msg)
+
+	// TODO(@FollowTheProcess): Handle quoting
+	for i := 0; i < len(kv); i += 2 {
+		buf.WriteByte(' ')
+		key := keyStyle.Sprint(kv[i])
+		val := fmt.Sprintf("%+v", kv[i+1])
+
+		buf.WriteString(key)
+		buf.WriteByte('=')
+		buf.WriteString(val)
+	}
+
 	buf.WriteByte('\n')
 
 	// WriteTo drains the buffer
