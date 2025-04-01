@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"strings"
 	"sync"
@@ -27,7 +28,8 @@ func TestVisual(t *testing.T) {
 	logger.Warn("Config file missing, falling back to defaults")
 	logger.Error("File not found")
 
-	prefixed.Warn("Pizza is burning!")
+	prefixed.Warn("Pizza is burning!", "flavour", "pepperoni")
+	prefixed.Info("Response from oven API", "status", http.StatusOK, "duration", 57*time.Millisecond)
 }
 
 func TestDebug(t *testing.T) {
@@ -46,6 +48,7 @@ func TestDebug(t *testing.T) {
 	tests := []struct {
 		name    string
 		msg     string
+		kv      []any
 		want    string
 		options []log.Option
 	}{
@@ -74,6 +77,15 @@ func TestDebug(t *testing.T) {
 			msg:  "Hello debug!",
 			want: "[TIME] DEBUG building: Hello debug!\n",
 		},
+		{
+			name: "with kv",
+			options: []log.Option{
+				log.WithLevel(log.LevelDebug),
+			},
+			msg:  "Hello debug!",
+			kv:   []any{"number", 12, "duration", 30 * time.Second, "enabled", true},
+			want: "[TIME] DEBUG: Hello debug! number=12 duration=30s enabled=true\n",
+		},
 	}
 
 	for _, tt := range tests {
@@ -85,7 +97,7 @@ func TestDebug(t *testing.T) {
 
 			logger := log.New(buf, tt.options...)
 
-			logger.Debug(tt.msg)
+			logger.Debug(tt.msg, tt.kv...)
 
 			got := buf.String()
 			got = strings.ReplaceAll(got, fixedTimeString, "[TIME]")
@@ -150,14 +162,14 @@ func BenchmarkLogger(b *testing.B) {
 			logger.Debug("A message!")
 		}
 	})
-}
 
-func BenchmarkDiscard(b *testing.B) {
-	// Here to test that effectively nothing is done
-	// when w == io.Discard
-	logger := log.New(io.Discard, log.WithLevel(log.LevelDebug))
+	b.Run("discard", func(b *testing.B) {
+		// Here to test that effectively nothing is done
+		// when w == io.Discard
+		logger := log.New(io.Discard, log.WithLevel(log.LevelDebug))
 
-	for b.Loop() {
-		logger.Debug("Nothing")
-	}
+		for b.Loop() {
+			logger.Debug("Nothing")
+		}
+	})
 }
