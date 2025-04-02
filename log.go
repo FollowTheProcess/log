@@ -128,10 +128,8 @@ func (l *Logger) log(level Level, msg string, kv ...any) {
 	buf.WriteByte(' ')
 	buf.WriteString(msg)
 
-	hasKvs := len(l.kv)+len(kv) != 0
-
-	if hasKvs {
-		kvs := make([]any, 0, len(l.kv)+len(kv))
+	if numKVs := len(l.kv) + len(kv); numKVs != 0 {
+		kvs := make([]any, 0, numKVs)
 		kvs = append(kvs, l.kv...)
 		if len(kvs)%2 != 0 {
 			kvs = append(kvs, missingValue)
