@@ -113,6 +113,15 @@ func TestDebug(t *testing.T) {
 			kv:   []any{"enabled", true, "file", "./file.txt", "elapsed"},
 			want: "[TIME] DEBUG: One is missing enabled=true file=./file.txt elapsed=<MISSING>\n",
 		},
+		{
+			name: "custom time format",
+			options: []log.Option{
+				log.WithLevel(log.LevelDebug),
+				log.TimeFormat(time.Kitchen),
+			},
+			msg:  "The oven is done",
+			want: "1:34PM DEBUG: The oven is done\n",
+		},
 	}
 
 	for _, tt := range tests {
