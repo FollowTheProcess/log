@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"slices"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -37,10 +38,11 @@ const missingValue = "<MISSING>"
 type Logger struct {
 	w          io.Writer        // Where to write logs to
 	timeFunc   func() time.Time // A function to get the current time, defaults to [time.Now] (with UTC)
+	mu         *sync.Mutex      // Protects w
 	timeFormat string           // The time format layout string, defaults to [time.RFC3339]
 	prefix     string           // Optional prefix to prepend to all log messages
+	kv         []any            // Persistent key value pairs
 	level      Level            // The configured level of this logger, logs below this level are not shown
-	mu         sync.Mutex       // Protects w
 	isDiscard  atomic.Bool      // w == [io.Discard], cached
 }
 
@@ -51,6 +53,7 @@ func New(w io.Writer, options ...Option) *Logger {
 		level:      LevelInfo,
 		timeFormat: time.RFC3339,
 		timeFunc:   now,
+		mu:         &sync.Mutex{},
 	}
 
 	logger.isDiscard.Store(w == io.Discard)
@@ -60,6 +63,26 @@ func New(w io.Writer, options ...Option) *Logger {
 	}
 
 	return logger
+}
+
+// With returns a new [Logger] with the given persistent key value pairs.
+//
+// The returned logger is otherwise an exact clone of the caller.
+func (l *Logger) With(kv ...any) *Logger {
+	sub := l.clone()
+
+	sub.kv = slices.Concat(sub.kv, kv)
+	return sub
+}
+
+// Prefixed returns a new [Logger] with the given prefix.
+//
+// The returned logger is otherwise an exact clone of the caller.
+func (l *Logger) Prefixed(prefix string) *Logger {
+	sub := l.clone()
+
+	sub.prefix = prefix
+	return sub
 }
 
 // Debug writes a debug level log line.
@@ -105,22 +128,33 @@ func (l *Logger) log(level Level, msg string, kv ...any) {
 	buf.WriteByte(' ')
 	buf.WriteString(msg)
 
-	if len(kv)%2 != 0 {
-		kv = append(kv, missingValue)
-	}
+	hasKvs := len(l.kv)+len(kv) != 0
 
-	for i := 0; i < len(kv); i += 2 {
-		buf.WriteByte(' ')
-		key := keyStyle.Sprint(kv[i])
-		val := fmt.Sprintf("%+v", kv[i+1])
-
-		if needsQuotes(val) || val == "" {
-			val = strconv.Quote(val)
+	if hasKvs {
+		kvs := make([]any, 0, len(l.kv)+len(kv))
+		kvs = append(kvs, l.kv...)
+		if len(kvs)%2 != 0 {
+			kvs = append(kvs, missingValue)
 		}
 
-		buf.WriteString(key)
-		buf.WriteByte('=')
-		buf.WriteString(val)
+		kvs = append(kvs, kv...)
+		if len(kvs)%2 != 0 {
+			kvs = append(kvs, missingValue)
+		}
+
+		for i := 0; i < len(kvs); i += 2 {
+			buf.WriteByte(' ')
+			key := keyStyle.Sprint(kvs[i])
+			val := fmt.Sprintf("%+v", kvs[i+1])
+
+			if needsQuotes(val) || val == "" {
+				val = strconv.Quote(val)
+			}
+
+			buf.WriteString(key)
+			buf.WriteByte('=')
+			buf.WriteString(val)
+		}
 	}
 
 	buf.WriteByte('\n')
@@ -129,6 +163,22 @@ func (l *Logger) log(level Level, msg string, kv ...any) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	buf.WriteTo(l.w) //nolint: errcheck // Just like printing
+}
+
+// clone returns an exact clone of the calling logger.
+func (l *Logger) clone() *Logger {
+	clone := &Logger{
+		w:          l.w,
+		timeFunc:   l.timeFunc,
+		timeFormat: l.timeFormat,
+		prefix:     l.prefix,
+		level:      l.level,
+		mu:         l.mu,
+	}
+
+	clone.isDiscard.Store(l.isDiscard.Load())
+
+	return clone
 }
 
 // Each log method (Debug, Info, Warn) etc. gets a buffer from this pool
