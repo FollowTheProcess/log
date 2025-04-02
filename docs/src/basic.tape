@@ -70,10 +70,23 @@ Set MarginFill "#7983FF"
 Set BorderRadius 10
 Set TypingSpeed 100ms
 
-Type "go test . -run TestVisual -v" Sleep 500ms  Enter
+# Setup
+Hide
+Type "go build -o ./basic ./examples/basic && clear" Sleep 2s
+Enter
+Sleep 2s
+Show
+Sleep 1s
+
+Type "./basic" Sleep 500ms  Enter
 
 Sleep 6s
 
 Type "clear" Sleep 500ms Enter
 
 Sleep 1s
+
+# Cleanup
+Hide
+Type "rm -f ./basic"
+Enter

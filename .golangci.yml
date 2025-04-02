@@ -54,6 +54,11 @@ linters:
           - prealloc # These kinds of optimisations will make no difference to test code
           - gosec # Tests don't need security stuff
 
+      - path: examples
+        linters:
+          - gosec
+          - mnd
+
   settings:
     cyclop:
       max-complexity: 20
