@@ -86,6 +86,33 @@ func TestDebug(t *testing.T) {
 			kv:   []any{"number", 12, "duration", 30 * time.Second, "enabled", true},
 			want: "[TIME] DEBUG: Hello debug! number=12 duration=30s enabled=true\n",
 		},
+		{
+			name: "with kv quoted",
+			options: []log.Option{
+				log.WithLevel(log.LevelDebug),
+			},
+			msg:  "Hello debug!",
+			kv:   []any{"number", 12, "duration", 30 * time.Second, "sentence", "this has spaces"},
+			want: `[TIME] DEBUG: Hello debug! number=12 duration=30s sentence="this has spaces"` + "\n",
+		},
+		{
+			name: "with kv escape chars",
+			options: []log.Option{
+				log.WithLevel(log.LevelDebug),
+			},
+			msg:  "Hello debug!",
+			kv:   []any{"number", 12, "duration", 30 * time.Second, "sentence", "ooh\t\nstuff"},
+			want: `[TIME] DEBUG: Hello debug! number=12 duration=30s sentence="ooh\t\nstuff"` + "\n",
+		},
+		{
+			name: "with kv odd number",
+			options: []log.Option{
+				log.WithLevel(log.LevelDebug),
+			},
+			msg:  "One is missing",
+			kv:   []any{"enabled", true, "file", "./file.txt", "elapsed"},
+			want: "[TIME] DEBUG: One is missing enabled=true file=./file.txt elapsed=<MISSING>\n",
+		},
 	}
 
 	for _, tt := range tests {

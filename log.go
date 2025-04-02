@@ -9,9 +9,12 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/FollowTheProcess/hue"
 )
@@ -26,6 +29,8 @@ const (
 	warnStyle      = hue.Yellow | hue.Bold
 	errorStyle     = hue.Red | hue.Bold
 )
+
+const missingValue = "<MISSING>"
 
 // Logger is a command line logger. It is safe to use across concurrently
 // executing goroutines.
@@ -100,11 +105,18 @@ func (l *Logger) log(level Level, msg string, kv ...any) {
 	buf.WriteByte(' ')
 	buf.WriteString(msg)
 
-	// TODO(@FollowTheProcess): Handle quoting
+	if len(kv)%2 != 0 {
+		kv = append(kv, missingValue)
+	}
+
 	for i := 0; i < len(kv); i += 2 {
 		buf.WriteByte(' ')
 		key := keyStyle.Sprint(kv[i])
 		val := fmt.Sprintf("%+v", kv[i+1])
+
+		if needsQuotes(val) || val == "" {
+			val = strconv.Quote(val)
+		}
 
 		buf.WriteString(key)
 		buf.WriteByte('=')
@@ -157,4 +169,15 @@ func putBuffer(buf *bytes.Buffer) {
 // now returns the current time with UTC.
 func now() time.Time {
 	return time.Now().UTC()
+}
+
+// needsQuotes returns whether s should be displayed as "s".
+func needsQuotes(s string) bool {
+	for _, char := range s {
+		if char == utf8.RuneError || unicode.IsSpace(char) || !unicode.IsPrint(char) {
+			return true
+		}
+	}
+
+	return false
 }
