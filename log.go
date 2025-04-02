@@ -3,6 +3,9 @@
 // The logs it produces are semi-structured with key value pairs being formatted as key=value but are primarily
 // intended to be human readable and easy on the eye with a good choice of colours, ideal for command line
 // applications that have a --debug or --verbose flag that enables extra logging.
+//
+// log emphasis simplicity and efficiency so there aren't too many knobs to twiddle, you just get a consistent,
+// easy to use, simple logger with minimal overhead.
 package log
 
 import (
@@ -46,7 +49,10 @@ type Logger struct {
 	isDiscard  atomic.Bool      // w == [io.Discard], cached
 }
 
-// New returns a new [Logger].
+// New returns a new [Logger] configured to write to w.
+//
+// The logger can be configured by passing a number of functional options to set
+// things like level, prefix etc.
 func New(w io.Writer, options ...Option) *Logger {
 	logger := &Logger{
 		w:          w,
