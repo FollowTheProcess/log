@@ -72,13 +72,13 @@ Set TypingSpeed 100ms
 
 # Setup
 Hide
-Type "go build -o ./basic ./examples/basic && clear" Sleep 2s
+Type "go build -o ./demo ./examples/demo && clear" Sleep 2s
 Enter
 Sleep 2s
 Show
 Sleep 1s
 
-Type "./basic" Sleep 500ms  Enter
+Type "./demo" Sleep 500ms  Enter
 
 Sleep 6s
 
@@ -88,5 +88,5 @@ Sleep 1s
 
 # Cleanup
 Hide
-Type "rm -f ./basic"
+Type "rm -f ./demo"
 Enter
