@@ -21,7 +21,7 @@ func TestVisual(t *testing.T) {
 
 	logger := log.New(os.Stdout, log.WithLevel(log.LevelDebug))
 
-	prefixed := log.New(os.Stdout, log.Prefix("cooking"), log.WithLevel(log.LevelDebug))
+	prefixed := logger.Prefixed("cooking")
 
 	logger.Debug("Doing some debuggy things")
 	logger.Info("Logging in")
@@ -46,11 +46,11 @@ func TestDebug(t *testing.T) {
 	fixedTimeString := fixedTime().Format(time.RFC3339)
 
 	tests := []struct {
-		name    string
-		msg     string
-		kv      []any
-		want    string
-		options []log.Option
+		name    string       // Name of the test case
+		msg     string       // Message to log
+		kv      []any        // Key value pairs to pass to the log method
+		want    string       // Expected log line
+		options []log.Option // Options to customise the logger under test
 	}{
 		{
 			name: "disabled",
@@ -134,6 +134,34 @@ func TestDebug(t *testing.T) {
 	}
 }
 
+func TestWith(t *testing.T) {
+	// Constantly return the same time
+	fixedTime := func() time.Time {
+		fixed, err := time.Parse(time.RFC3339, "2025-04-01T13:34:03Z")
+		test.Ok(t, err)
+
+		return fixed
+	}
+
+	fixedTimeString := fixedTime().Format(time.RFC3339)
+
+	buf := &bytes.Buffer{}
+
+	logger := log.New(buf, log.TimeFunc(fixedTime))
+
+	logger.Info("I'm an info message")
+
+	sub := logger.With("sub", true, "missing")
+
+	sub.Info("I'm also an info message")
+
+	got := buf.String()
+	got = strings.TrimSpace(strings.ReplaceAll(got, fixedTimeString, "[TIME]")) + "\n"
+
+	want := "[TIME] INFO: I'm an info message\n[TIME] INFO: I'm also an info message sub=true missing=<MISSING>\n"
+	test.Diff(t, got, want)
+}
+
 func TestRace(t *testing.T) {
 	buf := &bytes.Buffer{}
 
@@ -146,6 +174,7 @@ func TestRace(t *testing.T) {
 	}
 
 	logger := log.New(buf, log.TimeFunc(fixedTime))
+	sub := logger.Prefixed("sub")
 
 	const n = 5
 
@@ -158,13 +187,22 @@ func TestRace(t *testing.T) {
 		}(&wg, i)
 	}
 
+	wg.Add(n)
+	for i := range n {
+		go func(wg *sync.WaitGroup, i int) {
+			defer wg.Done()
+			sub.Info(fmt.Sprintf("Other: %d", i))
+		}(&wg, i)
+	}
+
 	wg.Wait()
 
 	// Make sure they all got written, order doesn't matter because concurrency
 	got := strings.TrimSpace(buf.String())
+	t.Logf("got = %s\n", got)
 	lines := strings.Split(got, "\n")
 
-	test.Equal(t, len(lines), n, test.Context("expected %d log lines", n))
+	test.Equal(t, len(lines), n*2, test.Context("expected %d log lines", n*2))
 }
 
 func BenchmarkLogger(b *testing.B) {
