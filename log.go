@@ -93,7 +93,7 @@ func WithContext(ctx context.Context, logger *Logger) context.Context {
 func FromContext(ctx context.Context) *Logger {
 	logger, ok := ctx.Value(contextKey).(*Logger)
 	if !ok || logger == nil {
-		logger = New(os.Stderr)
+		return New(os.Stderr)
 	}
 
 	return logger

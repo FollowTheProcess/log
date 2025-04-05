@@ -215,32 +215,43 @@ func TestRace(t *testing.T) {
 }
 
 func TestContext(t *testing.T) {
-	buf := &bytes.Buffer{}
+	t.Run("present", func(t *testing.T) {
+		buf := &bytes.Buffer{}
 
-	// Constantly return the same time
-	fixedTime := func() time.Time {
-		fixed, err := time.Parse(time.RFC3339, "2025-04-01T13:34:03Z")
-		test.Ok(t, err)
+		// Constantly return the same time
+		fixedTime := func() time.Time {
+			fixed, err := time.Parse(time.RFC3339, "2025-04-01T13:34:03Z")
+			test.Ok(t, err)
 
-		return fixed
-	}
+			return fixed
+		}
 
-	// Configure it a bit so we know we're getting the right one
-	logger := log.New(buf, log.TimeFunc(fixedTime), log.TimeFormat(time.Kitchen))
+		// Configure it a bit so we know we're getting the right one
+		logger := log.New(buf, log.TimeFunc(fixedTime), log.TimeFormat(time.Kitchen))
 
-	logger.Info("Before")
+		logger.Info("Before")
 
-	ctx := t.Context()
+		ctx := t.Context()
 
-	ctx = log.WithContext(ctx, logger)
+		ctx = log.WithContext(ctx, logger)
 
-	after := log.FromContext(ctx)
+		after := log.FromContext(ctx)
 
-	after.Info("After")
+		after.Info("After")
 
-	got := buf.String()
+		got := buf.String()
 
-	test.Diff(t, got, "1:34PM INFO: Before\n1:34PM INFO: After\n")
+		test.Diff(t, got, "1:34PM INFO: Before\n1:34PM INFO: After\n")
+	})
+
+	t.Run("missing", func(t *testing.T) {
+		_, stderr := test.CaptureOutput(t, func() error {
+			log.FromContext(t.Context()).Info("FromContext")
+			return nil
+		})
+
+		test.True(t, strings.Contains(stderr, "FromContext"))
+	})
 }
 
 func BenchmarkLogger(b *testing.B) {
