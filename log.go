@@ -10,8 +10,10 @@ package log
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
+	"os"
 	"slices"
 	"strconv"
 	"sync"
@@ -34,7 +36,14 @@ const (
 	errorStyle     = hue.Red | hue.Bold
 )
 
+// missingValue is the placeholder text for a missing value in a log line's key value pair.
 const missingValue = "<MISSING>"
+
+// ctxKey is the unexported type used for context key so this key never collides with another.
+type ctxKey struct{}
+
+// contextKey is the actual key used to store and retrieve a Logger from a Context.
+var contextKey = ctxKey{}
 
 // Logger is a command line logger. It is safe to use across concurrently
 // executing goroutines.
@@ -58,7 +67,7 @@ func New(w io.Writer, options ...Option) *Logger {
 		w:          w,
 		level:      LevelInfo,
 		timeFormat: time.RFC3339,
-		timeFunc:   now,
+		timeFunc:   func() time.Time { return time.Now().UTC() },
 		mu:         &sync.Mutex{},
 	}
 
@@ -66,6 +75,25 @@ func New(w io.Writer, options ...Option) *Logger {
 
 	for _, option := range options {
 		option(logger)
+	}
+
+	return logger
+}
+
+// WithContext stores the given logger in a [context.Context].
+//
+// The logger may be retrieved from the context with [FromContext].
+func WithContext(ctx context.Context, logger *Logger) context.Context {
+	return context.WithValue(ctx, contextKey, logger)
+}
+
+// FromContext returns the [Logger] from a [context.Context].
+//
+// If the context does not contain a logger, a default logger is returned.
+func FromContext(ctx context.Context) *Logger {
+	logger, ok := ctx.Value(contextKey).(*Logger)
+	if !ok || logger == nil {
+		logger = New(os.Stderr)
 	}
 
 	return logger
@@ -218,11 +246,6 @@ func putBuffer(buf *bytes.Buffer) {
 	}
 
 	bufPool.Put(buf)
-}
-
-// now returns the current time with UTC.
-func now() time.Time {
-	return time.Now().UTC()
 }
 
 // needsQuotes returns whether s should be displayed as "s".
