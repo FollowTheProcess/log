@@ -208,7 +208,6 @@ func TestRace(t *testing.T) {
 
 	// Make sure they all got written, order doesn't matter because concurrency
 	got := strings.TrimSpace(buf.String())
-	t.Logf("got = %s\n", got)
 	lines := strings.Split(got, "\n")
 
 	test.Equal(t, len(lines), n*2, test.Context("expected %d log lines", n*2))
