@@ -1,7 +1,7 @@
 # log
 
 [![License](https://img.shields.io/github/license/FollowTheProcess/log)](https://github.com/FollowTheProcess/log)
-[![Go Reference](https://pkg.go.dev/badge/github.com/FollowTheProcess/log.svg)](https://pkg.go.dev/github.com/FollowTheProcess/log)
+[![Go Reference](https://pkg.go.dev/badge/go.followtheprocess.codes/log.svg)](https://pkg.go.dev/go.followtheprocess.codes/log)
 [![Go Report Card](https://goreportcard.com/badge/github.com/FollowTheProcess/log)](https://goreportcard.com/report/github.com/FollowTheProcess/log)
 [![GitHub](https://img.shields.io/github/v/release/FollowTheProcess/log?logo=github&sort=semver)](https://github.com/FollowTheProcess/log)
 [![CI](https://github.com/FollowTheProcess/log/workflows/CI/badge.svg)](https://github.com/FollowTheProcess/log/actions?query=workflow%3ACI)
@@ -23,7 +23,7 @@ use everywhere across all my Go projects (which are mostly command line applicat
 ## Installation
 
 ```shell
-go get github.com/FollowTheProcess/log@latest
+go get go.followtheprocess.codes/log@latest
 ```
 
 ## Quickstart
@@ -35,7 +35,7 @@ import (
     "fmt"
     "os"
 
-    "github.com/FollowTheProcess/log"
+    "go.followtheprocess.codes/log"
 )
 
 func main() {
