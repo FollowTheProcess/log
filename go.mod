@@ -1,13 +1,13 @@
-module github.com/FollowTheProcess/log
+module go.followtheprocess.codes/log
 
 go 1.24
 
 require (
-	github.com/FollowTheProcess/hue v0.5.2
-	github.com/FollowTheProcess/test v0.21.0
+	go.followtheprocess.codes/hue v0.6.0
+	go.followtheprocess.codes/test v0.22.0
 )
 
 require (
-	golang.org/x/sys v0.31.0 // indirect
-	golang.org/x/term v0.30.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/term v0.32.0 // indirect
 )

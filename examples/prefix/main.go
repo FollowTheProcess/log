@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/FollowTheProcess/log"
+	"go.followtheprocess.codes/log"
 )
 
 func main() {

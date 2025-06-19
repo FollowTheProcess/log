@@ -6,7 +6,7 @@
 //
 // log emphasis simplicity and efficiency so there aren't too many knobs to twiddle, you just get a consistent,
 // easy to use, simple logger with minimal overhead.
-package log
+package log // import "go.followtheprocess.codes/log"
 
 import (
 	"bytes"
@@ -22,7 +22,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/FollowTheProcess/hue"
+	"go.followtheprocess.codes/hue"
 )
 
 // Styles.
