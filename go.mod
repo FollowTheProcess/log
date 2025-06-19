@@ -3,7 +3,7 @@ module github.com/FollowTheProcess/log
 go 1.24
 
 require (
-	github.com/FollowTheProcess/hue v0.5.2
+	github.com/FollowTheProcess/hue v0.6.0
 	github.com/FollowTheProcess/test v0.21.0
 )
 
