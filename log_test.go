@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/FollowTheProcess/hue"
-	"github.com/FollowTheProcess/log"
-	"github.com/FollowTheProcess/test"
+	"go.followtheprocess.codes/hue"
+	"go.followtheprocess.codes/log"
+	"go.followtheprocess.codes/test"
 )
 
 func TestVisual(t *testing.T) {
