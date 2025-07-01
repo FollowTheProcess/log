@@ -2,6 +2,7 @@ package main
 
 import (
 	"math/rand/v2"
+	"net/http"
 	"os"
 	"time"
 
@@ -17,9 +18,9 @@ func main() {
 
 	prefixed.Warn("Slow endpoint", "endpoint", "users/slow", "duration", 10*time.Second)
 	sleep()
-	prefixed.Info("Response from get repos", "status", 200, "duration", 500*time.Millisecond)
+	prefixed.Info("Response from get repos", "status", http.StatusOK, "duration", 500*time.Millisecond)
 	sleep()
-	prefixed.Error("Response from something else", "status", 400, "duration", 33*time.Millisecond)
+	prefixed.Error("Response from something else", "status", http.StatusBadRequest, "duration", 33*time.Millisecond)
 }
 
 func sleep() {

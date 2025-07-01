@@ -4,7 +4,7 @@
 // intended to be human readable and easy on the eye with a good choice of colours, ideal for command line
 // applications that have a --debug or --verbose flag that enables extra logging.
 //
-// log emphasis simplicity and efficiency so there aren't too many knobs to twiddle, you just get a consistent,
+// log emphasises simplicity and efficiency so there aren't too many knobs to twiddle, you just get a consistent,
 // easy to use, simple logger with minimal overhead.
 package log // import "go.followtheprocess.codes/log"
 
@@ -106,6 +106,7 @@ func (l *Logger) With(kv ...any) *Logger {
 	sub := l.clone()
 
 	sub.kv = slices.Concat(sub.kv, kv)
+
 	return sub
 }
 
@@ -116,6 +117,7 @@ func (l *Logger) Prefixed(prefix string) *Logger {
 	sub := l.clone()
 
 	sub.prefix = prefix
+
 	return sub
 }
 
@@ -155,15 +157,18 @@ func (l *Logger) log(level Level, msg string, kv ...any) {
 	buf.WriteString(timestampStyle.Text(l.timeFunc().Format(l.timeFormat)))
 	buf.WriteByte(' ')
 	buf.WriteString(level.styled())
+
 	if l.prefix != "" {
 		buf.WriteString(" " + prefixStyle.Text(l.prefix))
 	}
+
 	buf.WriteByte(':')
 	buf.WriteByte(' ')
 	buf.WriteString(msg)
 
 	if numKVs := len(l.kv) + len(kv); numKVs != 0 {
 		kvs := make([]any, 0, numKVs)
+
 		kvs = append(kvs, l.kv...)
 		if len(kvs)%2 != 0 {
 			kvs = append(kvs, missingValue)
@@ -176,6 +181,7 @@ func (l *Logger) log(level Level, msg string, kv ...any) {
 
 		for i := 0; i < len(kvs); i += 2 {
 			buf.WriteByte(' ')
+
 			key := keyStyle.Sprint(kvs[i])
 			val := fmt.Sprintf("%+v", kvs[i+1])
 
@@ -194,6 +200,7 @@ func (l *Logger) log(level Level, msg string, kv ...any) {
 	// WriteTo drains the buffer
 	l.mu.Lock()
 	defer l.mu.Unlock()
+
 	buf.WriteTo(l.w) //nolint: errcheck // Just like printing
 }
 
@@ -226,6 +233,7 @@ var bufPool = sync.Pool{
 func getBuffer() *bytes.Buffer {
 	buf := bufPool.Get().(*bytes.Buffer) //nolint:revive,errcheck,forcetypeassert // We are in total control of this
 	buf.Reset()
+
 	return buf
 }
 
