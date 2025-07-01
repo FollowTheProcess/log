@@ -189,17 +189,21 @@ func TestRace(t *testing.T) {
 
 	var wg sync.WaitGroup
 	wg.Add(n)
+
 	for i := range n {
 		go func(wg *sync.WaitGroup, i int) {
 			defer wg.Done()
+
 			logger.Info(fmt.Sprintf("Something: %d", i))
 		}(&wg, i)
 	}
 
 	wg.Add(n)
+
 	for i := range n {
 		go func(wg *sync.WaitGroup, i int) {
 			defer wg.Done()
+
 			sub.Info(fmt.Sprintf("Other: %d", i))
 		}(&wg, i)
 	}
