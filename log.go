@@ -16,6 +16,7 @@ import (
 	"os"
 	"slices"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -163,7 +164,11 @@ func (l *Logger) log(level Level, msg string, kv ...any) {
 	}
 
 	buf.WriteByte(':')
-	buf.WriteByte(' ')
+	padding := 2
+	if level == LevelDebug || level == LevelError {
+		padding = 1
+	}
+	buf.WriteString(strings.Repeat(" ", padding))
 	buf.WriteString(msg)
 
 	if numKVs := len(l.kv) + len(kv); numKVs != 0 {

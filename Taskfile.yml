@@ -8,7 +8,6 @@ vars:
 tasks:
   default:
     desc: List all available tasks
-    internal: true
     silent: true
     cmds:
       - task --list
