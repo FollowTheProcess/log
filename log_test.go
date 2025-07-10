@@ -167,7 +167,7 @@ func TestWith(t *testing.T) {
 	got := buf.String()
 	got = strings.TrimSpace(strings.ReplaceAll(got, fixedTimeString, "[TIME]")) + "\n"
 
-	want := "[TIME] INFO: I'm an info message\n[TIME] INFO: I'm also an info message sub=true missing=<MISSING>\n"
+	want := "[TIME] INFO:  I'm an info message\n[TIME] INFO:  I'm also an info message sub=true missing=<MISSING>\n"
 	test.Diff(t, got, want)
 }
 
@@ -244,7 +244,7 @@ func TestContext(t *testing.T) {
 
 		got := buf.String()
 
-		test.Diff(t, got, "1:34PM INFO: Before\n1:34PM INFO: After\n")
+		test.Diff(t, got, "1:34PM INFO:  Before\n1:34PM INFO:  After\n")
 	})
 
 	t.Run("missing", func(t *testing.T) {
