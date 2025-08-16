@@ -1,6 +1,6 @@
 module go.followtheprocess.codes/log
 
-go 1.25
+go 1.25.0
 
 ignore (
 	./docs
@@ -13,6 +13,6 @@ require (
 )
 
 require (
-	golang.org/x/sys v0.34.0 // indirect
-	golang.org/x/term v0.33.0 // indirect
+	golang.org/x/sys v0.35.0 // indirect
+	golang.org/x/term v0.34.0 // indirect
 )
