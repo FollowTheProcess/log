@@ -1,6 +1,6 @@
 module go.followtheprocess.codes/log
 
-go 1.25.0
+go 1.25
 
 ignore (
 	./docs
