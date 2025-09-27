@@ -8,7 +8,7 @@ ignore (
 )
 
 require (
-	go.followtheprocess.codes/hue v0.7.0
+	go.followtheprocess.codes/hue v1.0.0
 	go.followtheprocess.codes/test v0.23.1
 )
 
