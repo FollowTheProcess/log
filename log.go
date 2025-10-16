@@ -164,10 +164,12 @@ func (l *Logger) log(level Level, msg string, kv ...any) {
 	}
 
 	buf.WriteByte(':')
+
 	padding := 2
 	if level == LevelDebug || level == LevelError {
 		padding = 1
 	}
+
 	buf.WriteString(strings.Repeat(" ", padding))
 	buf.WriteString(msg)
 

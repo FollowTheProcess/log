@@ -25,8 +25,9 @@ tasks:
     desc: Run go fmt on all source files
     sources:
       - "**/*.go"
+      - .golangci.yml
     cmds:
-      - go fmt ./...
+      - golangci-lint fmt ./...
 
   demo:
     desc: Render the demo gifs
@@ -46,6 +47,9 @@ tasks:
       - go.mod
       - go.sum
       - "**/testdata/**/*"
+    env:
+      # -race needs CGO
+      CGO_ENABLED: 1
     cmds:
       - go test -race ./... {{ .CLI_ARGS }}
 
@@ -58,17 +62,19 @@ tasks:
 
   lint:
     desc: Run linting
+    deps:
+      - fmt
     sources:
       - "**/*.go"
-      - staticcheck.conf
+      - .golangci.yml
     preconditions:
-      - sh: command -v staticcheck
-        msg: staticcheck not installed, see https://staticcheck.dev/docs/getting-started/
+      - sh: command -v golangci-lint
+        msg: staticcheck not installed, run `brew install golangci-lint`
 
       - sh: command -v typos
         msg: requires typos-cli, run `brew install typos-cli`
     cmds:
-      - staticcheck ./...
+      - golangci-lint run ./...
       - typos
 
   doc:
