@@ -93,10 +93,10 @@ logger := log.New(os.Stderr, log.WithLevel(log.LevelDebug))
 
 ```go
 logger.Info(
-	"Doing something",
-	slog.Bool("cache", true),
-	slog.Duration("duration", 30 * time.Second),
-	slog.Int("number", 42),
+ "Doing something",
+ slog.Bool("cache", true),
+ slog.Duration("duration", 30 * time.Second),
+ slog.Int("number", 42),
 )
 ```
 
