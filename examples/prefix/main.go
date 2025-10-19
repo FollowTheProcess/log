@@ -14,7 +14,11 @@ func main() {
 	logger := log.New(os.Stderr)
 	prefixed := logger.Prefixed("http")
 
-	logger.Info("Calling GitHub API", slog.String("url", "https://api.github.com/"))
+	logger.Info(
+		"Calling GitHub API",
+		slog.String("url", "https://api.github.com/"),
+	)
+
 	sleep()
 
 	prefixed.Warn(
@@ -22,13 +26,17 @@ func main() {
 		slog.String("endpoint", "users/slow"),
 		slog.Duration("duration", 10*time.Second),
 	)
+
 	sleep()
+
 	prefixed.Info(
 		"Response from get repos",
 		slog.Int("status", http.StatusOK),
 		slog.Duration("duration", 500*time.Millisecond),
 	)
+
 	sleep()
+
 	prefixed.Error(
 		"Response from something else",
 		slog.Int("status", http.StatusBadRequest),

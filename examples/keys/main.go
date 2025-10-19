@@ -18,10 +18,15 @@ func main() {
 		slog.Duration("duration", 30*time.Second),
 		slog.Int("number", 42),
 	)
+
 	sleep()
 
 	sub := logger.With(slog.Bool("sub", true))
-	sub.Info("Hello from the sub logger", slog.String("subkey", "yes"))
+
+	sub.Info(
+		"Hello from the sub logger",
+		slog.String("subkey", "yes"),
+	)
 }
 
 func sleep() {
