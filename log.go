@@ -171,10 +171,7 @@ func (l *Logger) log(level Level, msg string, attrs ...slog.Attr) {
 	buf.WriteString(msg)
 
 	if totalAttrs := len(l.attrs) + len(attrs); totalAttrs != 0 {
-		all := make([]slog.Attr, 0, totalAttrs)
-
-		all = append(all, l.attrs...)
-		all = append(all, attrs...)
+		all := slices.Concat(l.attrs, attrs)
 
 		for _, attr := range all {
 			buf.WriteByte(' ')
