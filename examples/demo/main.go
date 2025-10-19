@@ -18,17 +18,30 @@ func main() {
 		slog.Int("temp", 42),
 		slog.Duration("time", 2*time.Minute),
 	)
+
 	sleep()
+
 	logger.Info(
 		"Choosing wine pairing",
 		slog.Any("choices", []string{"merlot", "malbec", "rioja"}),
 	)
-	sleep()
-	logger.Error("No malbec left!")
-	sleep()
-	logger.Warn("Falling back to second choice", slog.String("fallback", "rioja"))
 
-	logger.Info("Eating steak", slog.String("cut", "sirloin"), slog.Bool("enjoying", true))
+	sleep()
+
+	logger.Error("No malbec left!")
+
+	sleep()
+
+	logger.Warn(
+		"Falling back to second choice",
+		slog.String("fallback", "rioja"),
+	)
+
+	logger.Info(
+		"Eating steak",
+		slog.String("cut", "sirloin"),
+		slog.Bool("enjoying", true),
+	)
 }
 
 func sleep() {

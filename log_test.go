@@ -21,7 +21,6 @@ func TestVisual(t *testing.T) {
 	hue.Enabled(true) // Force colour
 
 	logger := log.New(os.Stdout, log.WithLevel(log.LevelDebug))
-
 	prefixed := logger.Prefixed("cooking")
 
 	logger.Debug("Doing some debuggy things")
@@ -192,7 +191,7 @@ func TestRace(t *testing.T) {
 	logger := log.New(buf, log.TimeFunc(fixedTime))
 	sub := logger.Prefixed("sub")
 
-	const n = 5
+	const n = 1000
 
 	var wg sync.WaitGroup
 	wg.Add(n)
@@ -222,46 +221,6 @@ func TestRace(t *testing.T) {
 	lines := strings.Split(got, "\n")
 
 	test.Equal(t, len(lines), n*2, test.Context("expected %d log lines", n*2))
-}
-
-func TestContext(t *testing.T) {
-	t.Run("present", func(t *testing.T) {
-		buf := &bytes.Buffer{}
-
-		// Constantly return the same time
-		fixedTime := func() time.Time {
-			fixed, err := time.Parse(time.RFC3339, "2025-04-01T13:34:03Z")
-			test.Ok(t, err)
-
-			return fixed
-		}
-
-		// Configure it a bit so we know we're getting the right one
-		logger := log.New(buf, log.TimeFunc(fixedTime), log.TimeFormat(time.Kitchen))
-
-		logger.Info("Before")
-
-		ctx := t.Context()
-
-		ctx = log.WithContext(ctx, logger)
-
-		after := log.FromContext(ctx)
-
-		after.Info("After")
-
-		got := buf.String()
-
-		test.Diff(t, got, "1:34PM INFO:  Before\n1:34PM INFO:  After\n")
-	})
-
-	t.Run("missing", func(t *testing.T) {
-		_, stderr := test.CaptureOutput(t, func() error {
-			log.FromContext(t.Context()).Info("FromContext")
-			return nil
-		})
-
-		test.True(t, strings.Contains(stderr, "FromContext"))
-	})
 }
 
 func BenchmarkLogger(b *testing.B) {

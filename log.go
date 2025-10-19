@@ -10,10 +10,8 @@ package log // import "go.followtheprocess.codes/log"
 
 import (
 	"bytes"
-	"context"
 	"io"
 	"log/slog"
-	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -36,12 +34,6 @@ const (
 	warnStyle      = hue.Yellow | hue.Bold
 	errorStyle     = hue.Red | hue.Bold
 )
-
-// ctxKey is the unexported type used for context key so this key never collides with another.
-type ctxKey struct{}
-
-// contextKey is the actual key used to store and retrieve a Logger from a Context.
-var contextKey = ctxKey{}
 
 // Logger is a command line logger. It is safe to use across concurrently
 // executing goroutines.
@@ -73,25 +65,6 @@ func New(w io.Writer, options ...Option) *Logger {
 
 	for _, option := range options {
 		option(logger)
-	}
-
-	return logger
-}
-
-// WithContext stores the given logger in a [context.Context].
-//
-// The logger may be retrieved from the context with [FromContext].
-func WithContext(ctx context.Context, logger *Logger) context.Context {
-	return context.WithValue(ctx, contextKey, logger)
-}
-
-// FromContext returns the [Logger] from a [context.Context].
-//
-// If the context does not contain a logger, a default logger is returned.
-func FromContext(ctx context.Context) *Logger {
-	logger, ok := ctx.Value(contextKey).(*Logger)
-	if !ok || logger == nil {
-		return New(os.Stderr)
 	}
 
 	return logger
