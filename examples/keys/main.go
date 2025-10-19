@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log/slog"
 	"math/rand/v2"
 	"os"
 	"time"
@@ -11,11 +12,16 @@ import (
 func main() {
 	logger := log.New(os.Stderr, log.WithLevel(log.LevelDebug))
 
-	logger.Info("Doing something", "cache", true, "duration", 30*time.Second, "number", 42)
+	logger.Info(
+		"Doing something",
+		slog.Bool("cache", true),
+		slog.Duration("duration", 30*time.Second),
+		slog.Int("number", 42),
+	)
 	sleep()
 
-	sub := logger.With("sub", true)
-	sub.Info("Hello from the sub logger", "subkey", "yes")
+	sub := logger.With(slog.Bool("sub", true))
+	sub.Info("Hello from the sub logger", slog.String("subkey", "yes"))
 }
 
 func sleep() {

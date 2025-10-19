@@ -29,7 +29,8 @@ const (
 	errorString = "ERROR"
 )
 
-func (l Level) styled() string {
+// String returns the stylised representation of the log level.
+func (l Level) String() string {
 	switch l {
 	case LevelDebug:
 		return debugStyle.Text(debugString)

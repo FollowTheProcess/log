@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -28,8 +29,8 @@ func TestVisual(t *testing.T) {
 	logger.Warn("Config file missing, falling back to defaults")
 	logger.Error("File not found")
 
-	prefixed.Warn("Pizza is burning!", "flavour", "pepperoni")
-	prefixed.Info("Response from oven API", "status", http.StatusOK, "duration", 57*time.Millisecond)
+	prefixed.Warn("Pizza is burning!", slog.String("flavour", "pepperoni"))
+	prefixed.Info("Response from oven API", slog.Int("status", http.StatusOK), slog.Duration("duration", 57*time.Millisecond))
 }
 
 func TestDebug(t *testing.T) {
@@ -48,7 +49,7 @@ func TestDebug(t *testing.T) {
 	tests := []struct {
 		name    string       // Name of the test case
 		msg     string       // Message to log
-		kv      []any        // Key value pairs to pass to the log method
+		attrs   []slog.Attr  // Additional attributes to pass to the log method
 		want    string       // Expected log line
 		options []log.Option // Options to customise the logger under test
 	}{
@@ -78,40 +79,43 @@ func TestDebug(t *testing.T) {
 			want: "[TIME] DEBUG building: Hello debug!\n",
 		},
 		{
-			name: "with kv",
+			name: "with attrs",
 			options: []log.Option{
 				log.WithLevel(log.LevelDebug),
 			},
-			msg:  "Hello debug!",
-			kv:   []any{"number", 12, "duration", 30 * time.Second, "enabled", true},
+			msg: "Hello debug!",
+			attrs: []slog.Attr{
+				slog.Int("number", 12),
+				slog.Duration("duration", 30*time.Second),
+				slog.Bool("enabled", true),
+			},
 			want: "[TIME] DEBUG: Hello debug! number=12 duration=30s enabled=true\n",
 		},
 		{
-			name: "with kv quoted",
+			name: "with attrs quoted",
 			options: []log.Option{
 				log.WithLevel(log.LevelDebug),
 			},
-			msg:  "Hello debug!",
-			kv:   []any{"number", 12, "duration", 30 * time.Second, "sentence", "this has spaces"},
+			msg: "Hello debug!",
+			attrs: []slog.Attr{
+				slog.Int("number", 12),
+				slog.Duration("duration", 30*time.Second),
+				slog.String("sentence", "this has spaces"),
+			},
 			want: `[TIME] DEBUG: Hello debug! number=12 duration=30s sentence="this has spaces"` + "\n",
 		},
 		{
-			name: "with kv escape chars",
+			name: "with attrs escape chars",
 			options: []log.Option{
 				log.WithLevel(log.LevelDebug),
 			},
-			msg:  "Hello debug!",
-			kv:   []any{"number", 12, "duration", 30 * time.Second, "sentence", "ooh\t\nstuff"},
+			msg: "Hello debug!",
+			attrs: []slog.Attr{
+				slog.Int("number", 12),
+				slog.Duration("duration", 30*time.Second),
+				slog.String("sentence", "ooh\t\nstuff"),
+			},
 			want: `[TIME] DEBUG: Hello debug! number=12 duration=30s sentence="ooh\t\nstuff"` + "\n",
-		},
-		{
-			name: "with kv odd number",
-			options: []log.Option{
-				log.WithLevel(log.LevelDebug),
-			},
-			msg:  "One is missing",
-			kv:   []any{"enabled", true, "file", "./file.txt", "elapsed"},
-			want: "[TIME] DEBUG: One is missing enabled=true file=./file.txt elapsed=<MISSING>\n",
 		},
 		{
 			name: "custom time format",
@@ -133,7 +137,7 @@ func TestDebug(t *testing.T) {
 
 			logger := log.New(buf, tt.options...)
 
-			logger.Debug(tt.msg, tt.kv...)
+			logger.Debug(tt.msg, tt.attrs...)
 
 			got := buf.String()
 			got = strings.ReplaceAll(got, fixedTimeString, "[TIME]")
@@ -160,14 +164,17 @@ func TestWith(t *testing.T) {
 
 	logger.Info("I'm an info message")
 
-	sub := logger.With("sub", true, "missing")
+	sub := logger.With(
+		slog.Bool("sub", true),
+		slog.String("hello", "world"),
+	)
 
 	sub.Info("I'm also an info message")
 
 	got := buf.String()
 	got = strings.TrimSpace(strings.ReplaceAll(got, fixedTimeString, "[TIME]")) + "\n"
 
-	want := "[TIME] INFO:  I'm an info message\n[TIME] INFO:  I'm also an info message sub=true missing=<MISSING>\n"
+	want := "[TIME] INFO:  I'm an info message\n[TIME] INFO:  I'm also an info message sub=true hello=world\n"
 	test.Diff(t, got, want)
 }
 
