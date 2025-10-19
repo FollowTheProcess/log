@@ -267,33 +267,41 @@ func TestContext(t *testing.T) {
 func BenchmarkLogger(b *testing.B) {
 	hue.Enabled(true) // Force colour
 
+	// Declare the buffer out here otherwise the benchmarks
+	// pick up the growing and re-allocating of this buffer
+	// which is just an artifact of the benchmark
+	buf := &bytes.Buffer{}
+
+	// Likewise the loggers are declared out here because creating the logger
+	// is typically done once in an application and the logger is re-used a bunch
+	// of times to write log lines
+	debugLogger := log.New(buf, log.WithLevel(log.LevelDebug))
+	infoLogger := log.New(buf, log.WithLevel(log.LevelInfo))
+	discardLogger := log.New(io.Discard, log.WithLevel(log.LevelDebug))
+
 	b.Run("enabled", func(b *testing.B) {
-		buf := &bytes.Buffer{}
-
-		logger := log.New(buf, log.WithLevel(log.LevelDebug))
-
 		for b.Loop() {
-			logger.Debug("A message!")
+			debugLogger.Debug("A message!")
 		}
+
+		buf.Reset()
 	})
 
 	b.Run("disabled", func(b *testing.B) {
-		buf := &bytes.Buffer{}
-
-		logger := log.New(buf, log.WithLevel(log.LevelInfo))
-
 		for b.Loop() {
-			logger.Debug("A message!")
+			infoLogger.Debug("A message!")
 		}
+
+		buf.Reset()
 	})
 
 	b.Run("discard", func(b *testing.B) {
 		// Here to test that effectively nothing is done
 		// when w == io.Discard
-		logger := log.New(io.Discard, log.WithLevel(log.LevelDebug))
-
 		for b.Loop() {
-			logger.Debug("Nothing")
+			discardLogger.Debug("Nothing")
 		}
+
+		buf.Reset()
 	})
 }
