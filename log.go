@@ -11,8 +11,8 @@ package log // import "go.followtheprocess.codes/log"
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"slices"
 	"strconv"
@@ -37,9 +37,6 @@ const (
 	errorStyle     = hue.Red | hue.Bold
 )
 
-// missingValue is the placeholder text for a missing value in a log line's key value pair.
-const missingValue = "<MISSING>"
-
 // ctxKey is the unexported type used for context key so this key never collides with another.
 type ctxKey struct{}
 
@@ -54,7 +51,7 @@ type Logger struct {
 	mu         *sync.Mutex      // Protects w
 	timeFormat string           // The time format layout string, defaults to [time.RFC3339]
 	prefix     string           // Optional prefix to prepend to all log messages
-	kv         []any            // Persistent key value pairs
+	attrs      []slog.Attr      // Persistent key value pairs
 	level      Level            // The configured level of this logger, logs below this level are not shown
 	isDiscard  atomic.Bool      // w == [io.Discard], cached
 }
@@ -103,10 +100,10 @@ func FromContext(ctx context.Context) *Logger {
 // With returns a new [Logger] with the given persistent key value pairs.
 //
 // The returned logger is otherwise an exact clone of the caller.
-func (l *Logger) With(kv ...any) *Logger {
+func (l *Logger) With(attrs ...slog.Attr) *Logger {
 	sub := l.clone()
 
-	sub.kv = slices.Concat(sub.kv, kv)
+	sub.attrs = slices.Concat(sub.attrs, attrs)
 
 	return sub
 }
@@ -123,27 +120,27 @@ func (l *Logger) Prefixed(prefix string) *Logger {
 }
 
 // Debug writes a debug level log line.
-func (l *Logger) Debug(msg string, kv ...any) {
-	l.log(LevelDebug, msg, kv...)
+func (l *Logger) Debug(msg string, attrs ...slog.Attr) {
+	l.log(LevelDebug, msg, attrs...)
 }
 
 // Info writes an info level log line.
-func (l *Logger) Info(msg string, kv ...any) {
-	l.log(LevelInfo, msg, kv...)
+func (l *Logger) Info(msg string, attrs ...slog.Attr) {
+	l.log(LevelInfo, msg, attrs...)
 }
 
 // Warn writes a warning level log line.
-func (l *Logger) Warn(msg string, kv ...any) {
-	l.log(LevelWarn, msg, kv...)
+func (l *Logger) Warn(msg string, attrs ...slog.Attr) {
+	l.log(LevelWarn, msg, attrs...)
 }
 
 // Error writes an error level log line.
-func (l *Logger) Error(msg string, kv ...any) {
-	l.log(LevelError, msg, kv...)
+func (l *Logger) Error(msg string, attrs ...slog.Attr) {
+	l.log(LevelError, msg, attrs...)
 }
 
 // log logs the given levelled message.
-func (l *Logger) log(level Level, msg string, kv ...any) {
+func (l *Logger) log(level Level, msg string, attrs ...slog.Attr) {
 	if l.isDiscard.Load() || l.level > level {
 		// Do as little work as possible
 		return
@@ -157,7 +154,7 @@ func (l *Logger) log(level Level, msg string, kv ...any) {
 
 	buf.WriteString(timestampStyle.Text(l.timeFunc().Format(l.timeFormat)))
 	buf.WriteByte(' ')
-	buf.WriteString(level.styled())
+	buf.WriteString(level.String())
 
 	if l.prefix != "" {
 		buf.WriteString(" " + prefixStyle.Text(l.prefix))
@@ -173,24 +170,17 @@ func (l *Logger) log(level Level, msg string, kv ...any) {
 	buf.WriteString(strings.Repeat(" ", padding))
 	buf.WriteString(msg)
 
-	if numKVs := len(l.kv) + len(kv); numKVs != 0 {
-		kvs := make([]any, 0, numKVs)
+	if totalAttrs := len(l.attrs) + len(attrs); totalAttrs != 0 {
+		all := make([]slog.Attr, 0, totalAttrs)
 
-		kvs = append(kvs, l.kv...)
-		if len(kvs)%2 != 0 {
-			kvs = append(kvs, missingValue)
-		}
+		all = append(all, l.attrs...)
+		all = append(all, attrs...)
 
-		kvs = append(kvs, kv...)
-		if len(kvs)%2 != 0 {
-			kvs = append(kvs, missingValue)
-		}
-
-		for i := 0; i < len(kvs); i += 2 {
+		for _, attr := range all {
 			buf.WriteByte(' ')
 
-			key := keyStyle.Sprint(kvs[i])
-			val := fmt.Sprintf("%+v", kvs[i+1])
+			key := keyStyle.Text(attr.Key)
+			val := attr.Value.String()
 
 			if needsQuotes(val) || val == "" {
 				val = strconv.Quote(val)
