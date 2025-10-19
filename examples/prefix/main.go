@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log/slog"
 	"math/rand/v2"
 	"net/http"
 	"os"
@@ -13,14 +14,26 @@ func main() {
 	logger := log.New(os.Stderr)
 	prefixed := logger.Prefixed("http")
 
-	logger.Info("Calling GitHub API", "url", "https://api.github.com/")
+	logger.Info("Calling GitHub API", slog.String("url", "https://api.github.com/"))
 	sleep()
 
-	prefixed.Warn("Slow endpoint", "endpoint", "users/slow", "duration", 10*time.Second)
+	prefixed.Warn(
+		"Slow endpoint",
+		slog.String("endpoint", "users/slow"),
+		slog.Duration("duration", 10*time.Second),
+	)
 	sleep()
-	prefixed.Info("Response from get repos", "status", http.StatusOK, "duration", 500*time.Millisecond)
+	prefixed.Info(
+		"Response from get repos",
+		slog.Int("status", http.StatusOK),
+		slog.Duration("duration", 500*time.Millisecond),
+	)
 	sleep()
-	prefixed.Error("Response from something else", "status", http.StatusBadRequest, "duration", 33*time.Millisecond)
+	prefixed.Error(
+		"Response from something else",
+		slog.Int("status", http.StatusBadRequest),
+		slog.Duration("duration", 33*time.Millisecond),
+	)
 }
 
 func sleep() {

@@ -34,6 +34,7 @@ package main
 import (
     "fmt"
     "os"
+    "log/slog"
 
     "go.followtheprocess.codes/log"
 )
@@ -42,7 +43,11 @@ func main() {
     logger := log.New(os.Stderr)
 
     logger.Debug("Debug me") // By default this one won't show up, default log level is INFO
-    logger.Info("Some information here", "really", true)
+    logger.Info(
+      "Some information here",
+      // Yep! You use slog.Attrs for key value pairs, why reinvent the wheel?
+      slog.Bool("really", true),
+    )
     logger.Warn("Uh oh!")
     logger.Error("Goodbye")
 }
@@ -84,18 +89,24 @@ logger := log.New(os.Stderr, log.WithLevel(log.LevelDebug))
 
 ### Key Value Pairs
 
-`log` provides "semi structured" logs in that the message is free form text but you can attach arbitrary key value pairs to any of the log methods
+`log` uses [slog.Attr] to provide "semi structured" logs. The message is free form text but you can attach arbitrary key, value pairs with any of the log methods
 
 ```go
-logger.Info("Doing something", "cache", true, "duration", 30 * time.Second, "number", 42)
+logger.Info(
+ "Doing something",
+ slog.Bool("cache", true),
+ slog.Duration("duration", 30 * time.Second),
+ slog.Int("number", 42),
+)
 ```
 
 You can also create a "sub logger" with persistent key value pairs applied to every message
 
 ```go
-sub := logger.With("sub", true)
+sub := logger.With(slog.Bool("sub", true))
 
-sub.Info("Hello from the sub logger", "subkey", "yes") // They can have their own per-method keys too!
+// They can have their own per-method keys too!
+sub.Info("Hello from the sub logger", slog.String("subkey", "yes"))
 ```
 
 <p align="center">
@@ -120,3 +131,5 @@ prefixed := logger.Prefixed("http")
 <p align="center">
 <img src="https://github.com/FollowTheProcess/log/raw/main/docs/img/prefix.gif" alt="demo">
 </p>
+
+[slog.Attr]: https://pkg.go.dev/log/slog#Attr
