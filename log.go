@@ -178,6 +178,7 @@ func (l *Logger) clone() *Logger {
 		timeFunc:   l.timeFunc,
 		timeFormat: l.timeFormat,
 		prefix:     l.prefix,
+		attrs:      l.attrs,
 		level:      l.level,
 		mu:         l.mu,
 	}
@@ -216,8 +217,7 @@ func putBuffer(buf *bytes.Buffer) {
 	// Approx 65kb
 	const maxSize = 64 << 10
 	if buf.Cap() > maxSize {
-		// Make the buffer nil so GC cleans it up
-		buf = nil
+		return
 	}
 
 	bufPool.Put(buf)

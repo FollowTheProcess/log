@@ -69,7 +69,7 @@ tasks:
       - .golangci.yml
     preconditions:
       - sh: command -v golangci-lint
-        msg: staticcheck not installed, run `brew install golangci-lint`
+        msg: golangci-lint not installed, run `brew install golangci-lint`
 
       - sh: command -v typos
         msg: requires typos-cli, run `brew install typos-cli`
