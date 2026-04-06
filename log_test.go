@@ -147,6 +147,8 @@ func TestDebug(t *testing.T) {
 }
 
 func TestWith(t *testing.T) {
+	hue.Enabled(false) // Force no color
+
 	// Constantly return the same time
 	fixedTime := func() time.Time {
 		fixed, err := time.Parse(time.RFC3339, "2025-04-01T13:34:03Z")
@@ -157,24 +159,67 @@ func TestWith(t *testing.T) {
 
 	fixedTimeString := fixedTime().Format(time.RFC3339)
 
-	buf := &bytes.Buffer{}
+	tests := []struct {
+		name string
+		fn   func(logger *log.Logger) string // Exercise the logger, return output
+		want string
+	}{
+		{
+			name: "attrs appear on sub logger",
+			fn: func(logger *log.Logger) string {
+				buf := &bytes.Buffer{}
+				l := log.New(buf, log.TimeFunc(fixedTime))
+				l.Info("I'm an info message")
+				sub := l.With(slog.Bool("sub", true), slog.String("hello", "world"))
+				sub.Info("I'm also an info message")
 
-	logger := log.New(buf, log.TimeFunc(fixedTime))
+				return buf.String()
+			},
+			want: "[TIME] INFO:  I'm an info message\n[TIME] INFO:  I'm also an info message sub=true hello=world\n",
+		},
+		{
+			name: "chained With preserves earlier attrs",
+			fn: func(logger *log.Logger) string {
+				buf := &bytes.Buffer{}
+				l := log.New(buf, log.TimeFunc(fixedTime))
+				l.With(slog.String("a", "1")).With(slog.String("b", "2")).Info("chained")
 
-	logger.Info("I'm an info message")
+				return buf.String()
+			},
+			want: "[TIME] INFO:  chained a=1 b=2\n",
+		},
+		{
+			name: "Prefixed preserves attrs from With",
+			fn: func(logger *log.Logger) string {
+				buf := &bytes.Buffer{}
+				l := log.New(buf, log.TimeFunc(fixedTime))
+				l.With(slog.String("a", "1")).Prefixed("svc").Info("prefixed")
 
-	sub := logger.With(
-		slog.Bool("sub", true),
-		slog.String("hello", "world"),
-	)
+				return buf.String()
+			},
+			want: "[TIME] INFO svc:  prefixed a=1\n",
+		},
+		{
+			name: "parent logger not affected by child With",
+			fn: func(logger *log.Logger) string {
+				buf := &bytes.Buffer{}
+				l := log.New(buf, log.TimeFunc(fixedTime))
+				_ = l.With(slog.String("child", "attr"))
+				l.Info("parent should have no attrs")
 
-	sub.Info("I'm also an info message")
+				return buf.String()
+			},
+			want: "[TIME] INFO:  parent should have no attrs\n",
+		},
+	}
 
-	got := buf.String()
-	got = strings.TrimSpace(strings.ReplaceAll(got, fixedTimeString, "[TIME]")) + "\n"
-
-	want := "[TIME] INFO:  I'm an info message\n[TIME] INFO:  I'm also an info message sub=true hello=world\n"
-	test.Diff(t, got, want)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.fn(nil)
+			got = strings.ReplaceAll(got, fixedTimeString, "[TIME]")
+			test.Diff(t, got, tt.want)
+		})
+	}
 }
 
 func TestRace(t *testing.T) {
