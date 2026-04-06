@@ -161,12 +161,12 @@ func TestWith(t *testing.T) {
 
 	tests := []struct {
 		name string
-		fn   func(logger *log.Logger) string // Exercise the logger, return output
+		fn   func() string // Exercise the logger, return output
 		want string
 	}{
 		{
 			name: "attrs appear on sub logger",
-			fn: func(logger *log.Logger) string {
+			fn: func() string {
 				buf := &bytes.Buffer{}
 				l := log.New(buf, log.TimeFunc(fixedTime))
 				l.Info("I'm an info message")
@@ -179,7 +179,7 @@ func TestWith(t *testing.T) {
 		},
 		{
 			name: "chained With preserves earlier attrs",
-			fn: func(logger *log.Logger) string {
+			fn: func() string {
 				buf := &bytes.Buffer{}
 				l := log.New(buf, log.TimeFunc(fixedTime))
 				l.With(slog.String("a", "1")).With(slog.String("b", "2")).Info("chained")
@@ -190,7 +190,7 @@ func TestWith(t *testing.T) {
 		},
 		{
 			name: "Prefixed preserves attrs from With",
-			fn: func(logger *log.Logger) string {
+			fn: func() string {
 				buf := &bytes.Buffer{}
 				l := log.New(buf, log.TimeFunc(fixedTime))
 				l.With(slog.String("a", "1")).Prefixed("svc").Info("prefixed")
@@ -201,7 +201,7 @@ func TestWith(t *testing.T) {
 		},
 		{
 			name: "parent logger not affected by child With",
-			fn: func(logger *log.Logger) string {
+			fn: func() string {
 				buf := &bytes.Buffer{}
 				l := log.New(buf, log.TimeFunc(fixedTime))
 				_ = l.With(slog.String("child", "attr"))
@@ -215,7 +215,7 @@ func TestWith(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.fn(nil)
+			got := tt.fn()
 			got = strings.ReplaceAll(got, fixedTimeString, "[TIME]")
 			test.Diff(t, got, tt.want)
 		})
