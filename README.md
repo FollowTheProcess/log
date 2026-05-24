@@ -22,7 +22,7 @@ use everywhere across all my Go projects (which are mostly command line applicat
 
 ## Installation
 
-```shell
+```bash
 go get go.followtheprocess.codes/log@latest
 ```
 
@@ -46,6 +46,7 @@ func main() {
     logger.Info(
       "Some information here",
       // Yep! You use slog.Attrs for key value pairs, why reinvent the wheel?
+      // ... says the guy who wrote a new Logger
       slog.Bool("really", true),
     )
     logger.Warn("Uh oh!")

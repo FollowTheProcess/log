@@ -40,7 +40,7 @@ const (
 type Logger struct {
 	w          io.Writer        // Where to write logs to
 	timeFunc   func() time.Time // A function to get the current time, defaults to [time.Now] (with UTC)
-	mu         *sync.Mutex      // Protects w
+	mu         *sync.Mutex      // Protects w, pointer so that child loggers share the same mutex
 	timeFormat string           // The time format layout string, defaults to [time.RFC3339]
 	prefix     string           // Optional prefix to prepend to all log messages
 	attrs      []slog.Attr      // Persistent key value pairs
@@ -130,7 +130,8 @@ func (l *Logger) log(level Level, msg string, attrs ...slog.Attr) {
 	buf.WriteString(level.String())
 
 	if l.prefix != "" {
-		buf.WriteString(" " + prefixStyle.Text(l.prefix))
+		buf.WriteString(" ")
+		buf.WriteString(prefixStyle.Text(l.prefix))
 	}
 
 	buf.WriteByte(':')
