@@ -91,6 +91,42 @@ func TestDebug(t *testing.T) {
 			want: "[TIME] DEBUG: Hello debug! number=12 duration=30s enabled=true\n",
 		},
 		{
+			name: "with scalar attrs",
+			options: []log.Option{
+				log.WithLevel(log.LevelDebug),
+			},
+			msg: "Hello debug!",
+			attrs: []slog.Attr{
+				slog.Int("negative", -5),
+				slog.Uint64("count", 42),
+				slog.Float64("ratio", 3.14),
+				slog.Bool("disabled", false),
+			},
+			want: "[TIME] DEBUG: Hello debug! negative=-5 count=42 ratio=3.14 disabled=false\n",
+		},
+		{
+			name: "quotes keys with whitespace",
+			options: []log.Option{
+				log.WithLevel(log.LevelDebug),
+			},
+			msg: "Hello debug!",
+			attrs: []slog.Attr{
+				slog.Int("a key", 1),
+			},
+			want: `[TIME] DEBUG: Hello debug! "a key"=1` + "\n",
+		},
+		{
+			name: "resolves logvaluer attrs",
+			options: []log.Option{
+				log.WithLevel(log.LevelDebug),
+			},
+			msg: "Hello debug!",
+			attrs: []slog.Attr{
+				slog.Any("token", secret("hunter2")),
+			},
+			want: "[TIME] DEBUG: Hello debug! token=REDACTED\n",
+		},
+		{
 			name: "with attrs quoted",
 			options: []log.Option{
 				log.WithLevel(log.LevelDebug),
@@ -282,10 +318,41 @@ func BenchmarkLogger(b *testing.B) {
 	debugLogger := log.New(buf, log.WithLevel(log.LevelDebug))
 	infoLogger := log.New(buf, log.WithLevel(log.LevelInfo))
 	discardLogger := log.New(io.Discard, log.WithLevel(log.LevelDebug))
+	prefixedLogger := debugLogger.Prefixed("bench")
+	attrLogger := debugLogger.With(slog.String("service", "oven"))
 
 	b.Run("enabled", func(b *testing.B) {
 		for b.Loop() {
 			debugLogger.Debug("A message!")
+		}
+
+		buf.Reset()
+	})
+
+	b.Run("prefixed", func(b *testing.B) {
+		for b.Loop() {
+			prefixedLogger.Debug("A message!")
+		}
+
+		buf.Reset()
+	})
+
+	b.Run("attrs", func(b *testing.B) {
+		for b.Loop() {
+			debugLogger.Debug(
+				"A message!",
+				slog.Int("status", http.StatusOK),
+				slog.Duration("duration", 57*time.Millisecond),
+				slog.String("sentence", "has spaces"),
+			)
+		}
+
+		buf.Reset()
+	})
+
+	b.Run("persistent_attrs", func(b *testing.B) {
+		for b.Loop() {
+			attrLogger.Debug("A message!", slog.Int("status", http.StatusOK))
 		}
 
 		buf.Reset()
@@ -308,4 +375,11 @@ func BenchmarkLogger(b *testing.B) {
 
 		buf.Reset()
 	})
+}
+
+// secret is a [slog.LogValuer] that redacts its value when logged.
+type secret string
+
+func (s secret) LogValue() slog.Value {
+	return slog.StringValue("REDACTED")
 }
