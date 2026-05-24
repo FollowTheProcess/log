@@ -197,7 +197,7 @@ func appendAttr(dst []byte, attr slog.Attr) []byte {
 		key = strconv.Quote(key)
 	}
 
-	dst = append(dst, keyStyle.Text(key)...)
+	dst = keyStyle.AppendString(dst, key)
 	dst = append(dst, '=')
 
 	return appendValue(dst, attr.Value)
