@@ -39,6 +39,6 @@ func TimeFunc(fn func() time.Time) Option {
 // to the message and any key value pairs.
 func Prefix(prefix string) Option {
 	return func(l *Logger) {
-		l.prefix = prefix
+		l.prefix = []byte(prefix)
 	}
 }

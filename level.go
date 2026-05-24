@@ -29,6 +29,15 @@ const (
 	errorString = "ERROR"
 )
 
+// Pre-converted label bytes so the hot path can append them with
+// [hue.Style.AppendText] without allocating a fresh []byte each log call.
+var (
+	debugBytes = []byte(debugString)
+	infoBytes  = []byte(infoString)
+	warnBytes  = []byte(warnString)
+	errorBytes = []byte(errorString)
+)
+
 // String returns the stylised representation of the log level.
 func (l Level) String() string {
 	switch l {
@@ -42,5 +51,23 @@ func (l Level) String() string {
 		return errorStyle.Text(errorString)
 	default:
 		return "unknown"
+	}
+}
+
+// appendTo appends the stylised level label to dst and returns the extended
+// slice. It is the allocation-light equivalent of [Level.String] used on the
+// logging hot path.
+func (l Level) appendTo(dst []byte) []byte {
+	switch l {
+	case LevelDebug:
+		return debugStyle.AppendText(dst, debugBytes)
+	case LevelInfo:
+		return infoStyle.AppendText(dst, infoBytes)
+	case LevelWarn:
+		return warnStyle.AppendText(dst, warnBytes)
+	case LevelError:
+		return errorStyle.AppendText(dst, errorBytes)
+	default:
+		return append(dst, "unknown"...)
 	}
 }
