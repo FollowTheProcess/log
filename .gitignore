@@ -34,8 +34,8 @@
 # Typos
 !.typos.toml
 
-# Task
-!Taskfile.yml
+# mise
+!mise.toml
 
 # Copier
 !.copier-answers.yml
