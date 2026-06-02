@@ -253,9 +253,12 @@ func (l *Logger) clone() *Logger {
 
 // Each log method (Debug, Info, Warn) etc. gets a buffer from this pool
 // so as not to keep re-allocating and destroying them.
+//
+//nolint:gochecknoglobals // This needs to be global
 var bufPool = sync.Pool{
 	New: func() any {
 		buf := make([]byte, 0, bufferSize)
+
 		return &buf
 	},
 }
@@ -263,7 +266,7 @@ var bufPool = sync.Pool{
 // getBuffer fetches a buffer from the pool, the returned buffer
 // is empty and ready to use.
 func getBuffer() *[]byte {
-	bufp := bufPool.Get().(*[]byte) //nolint:revive,errcheck,forcetypeassert // We are in total control of this
+	bufp := bufPool.Get().(*[]byte) //nolint:errcheck,forcetypeassert // We are in total control of this
 	*bufp = (*bufp)[:0]             // Reset
 
 	return bufp
