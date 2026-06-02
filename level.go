@@ -31,6 +31,8 @@ const (
 
 // Pre-converted label bytes so the hot path can append them with
 // [hue.Style.AppendText] without allocating a fresh []byte each log call.
+//
+//nolint:gochecknoglobals // Constants but []byte can't be constant
 var (
 	debugBytes = []byte(debugString)
 	infoBytes  = []byte(infoString)

@@ -29,7 +29,11 @@ func TestVisual(t *testing.T) {
 	logger.Error("File not found")
 
 	prefixed.Warn("Pizza is burning!", slog.String("flavour", "pepperoni"))
-	prefixed.Info("Response from oven API", slog.Int("status", http.StatusOK), slog.Duration("duration", 57*time.Millisecond))
+	prefixed.Info(
+		"Response from oven API",
+		slog.Int("status", http.StatusOK),
+		slog.Duration("duration", 57*time.Millisecond),
+	)
 }
 
 func TestDebug(t *testing.T) {
