@@ -13,6 +13,9 @@
 !/.github/**/*
 !.mailmap
 
+# Tangled workflows
+!/.tangled/**/*.yml
+
 # Go
 !*.go
 !go.sum
