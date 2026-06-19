@@ -1,6 +1,7 @@
 name: Tangled Mirror
 
 on:
+  delete:  # Also prune tangled
   push:
     branches:
       - main
@@ -19,29 +20,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    defaults:
-      run:
-        shell: bash
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: FollowTheProcess/tangled-mirror@main
         with:
-          fetch-depth: 0
-
-      - name: Configure SSH
-        env:
-          TANGLED_SSH_KEY: ${{ secrets.TANGLED_SSH_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          printf '%s\n' "$TANGLED_SSH_KEY" > ~/.ssh/tangled_key
-          chmod 600 ~/.ssh/tangled_key
-          ssh-keyscan tangled.org >> ~/.ssh/known_hosts 2>/dev/null
-
-      - name: Push to tangled
-        env:
-          GIT_SSH_COMMAND: ssh -i ~/.ssh/tangled_key -o IdentitiesOnly=yes
-        run: |-
-          git remote add tangled git@tangled.org:followtheprocess.codes/log
-          git push tangled --all
-          git push tangled --tags
+          tangled-ssh-key: ${{ secrets.TANGLED_SSH_KEY }}
+          tangled-handle: followtheprocess.codes
