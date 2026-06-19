@@ -39,7 +39,9 @@ jobs:
           ssh-keyscan tangled.org >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Push to tangled
+        env:
+          GIT_SSH_COMMAND: ssh -i ~/.ssh/tangled_key -o IdentitiesOnly=yes
         run: |-
           git remote add tangled git@tangled.org:followtheprocess.codes/log
-          GIT_SSH_COMMAND="ssh -i ~/.ssh/tangled_key -o IdentitiesOnly=yes" \
-            git push tangled --all --tags
+          git push tangled --all
+          git push tangled --tags
