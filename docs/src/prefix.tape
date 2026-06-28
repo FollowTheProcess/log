@@ -1,4 +1,4 @@
-Output ./docs/img/prefix.gif
+Output .assets/prefix.gif
 
 Set FontSize 18
 Set FontFamily "Geist Mono"

@@ -1,4 +1,4 @@
-Output ./docs/img/keys.gif
+Output .assets/keys.gif
 
 Set FontSize 18
 Set FontFamily "Geist Mono"

@@ -21,7 +21,14 @@ run = "golangci-lint fmt ./..."
 [tasks.demo]
 description = "Render the demo gifs"
 sources = ["docs/src/*.tape", "**/*.go"]
+outputs = [".assets/*.gif"]
 run = 'for file in ./docs/src/*.tape; do vhs "$file"; done'
+
+[tasks.upload]
+description = "Upload the demo gifs to my personal CDN. (Requires AWS auth)"
+depends = "demo"
+sources = [".assets/*.gif"]
+run = "aws s3 cp .assets/ s3://assets.followtheprocess.codes/projects/log/ --recursive --sse AES256"
 
 [tasks.test]
 description = "Run the test suite"

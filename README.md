@@ -10,7 +10,7 @@
 Simple, fast, opinionated logging for command line applications 🪵
 
 <p align="center">
-<img src="https://github.com/FollowTheProcess/log/raw/main/docs/img/demo.gif" alt="demo">
+<img src="https://assets.followtheprocess.codes/projects/log/demo.gif" alt="demo">
 </p>
 
 ## Project Description
@@ -111,7 +111,7 @@ sub.Info("Hello from the sub logger", slog.String("subkey", "yes"))
 ```
 
 <p align="center">
-<img src="https://github.com/FollowTheProcess/log/raw/main/docs/img/keys.gif" alt="demo">
+<img src="https://assets.followtheprocess.codes/projects/log/keys.gif" alt="keys">
 </p>
 
 ### Prefixes
@@ -130,7 +130,7 @@ prefixed := logger.Prefixed("http")
 ```
 
 <p align="center">
-<img src="https://github.com/FollowTheProcess/log/raw/main/docs/img/prefix.gif" alt="demo">
+<img src="https://assets.followtheprocess.codes/projects/log/prefix.gif" alt="prefix">
 </p>
 
 [slog.Attr]: https://pkg.go.dev/log/slog#Attr
