@@ -2,7 +2,6 @@
 
 [![License](https://img.shields.io/github/license/FollowTheProcess/log)](https://github.com/FollowTheProcess/log)
 [![Go Reference](https://pkg.go.dev/badge/go.followtheprocess.codes/log.svg)](https://pkg.go.dev/go.followtheprocess.codes/log)
-[![Go Report Card](https://goreportcard.com/badge/github.com/FollowTheProcess/log)](https://goreportcard.com/report/github.com/FollowTheProcess/log)
 [![GitHub](https://img.shields.io/github/v/release/FollowTheProcess/log?logo=github&sort=semver)](https://github.com/FollowTheProcess/log)
 [![CI](https://github.com/FollowTheProcess/log/workflows/CI/badge.svg)](https://github.com/FollowTheProcess/log/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/FollowTheProcess/log/branch/main/graph/badge.svg)](https://codecov.io/gh/FollowTheProcess/log)

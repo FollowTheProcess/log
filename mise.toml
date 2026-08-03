@@ -1,9 +1,4 @@
 # https://mise.jdx.dev
-[tools]
-golangci-lint = "latest"
-typos = "latest"
-vhs = "latest"
-"go:golang.org/x/pkgsite/cmd/pkgsite" = "latest"
 
 [vars]
 cov_data = "coverage.out"
