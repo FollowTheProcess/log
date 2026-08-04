@@ -1,47 +1,66 @@
 # Allowlisting gitignore template for GO projects prevents us
 # from adding various unwanted local files, such as generated
 # files, developer configurations or IDE-specific files etc.
+#
+# Recommended: Go.AllowList.gitignore
 
 # Ignore everything
 *
 
-# Except these...
-
-# Git/GitHub
+# But not these files...
 !/.gitignore
-!/.gitattributes
-!/.github/**/*
-!.mailmap
-
-# Tangled workflows
-!/.tangled/**/*.yml
 
 # Go
 !*.go
-!go.sum
-!go.mod
-!.goreleaser.yaml
-!.golangci.yml
-!staticcheck.conf
-!**/testdata/**
+!/go.sum
+!/go.mod
+!/.golangci.yml
+!/.goreleaser.yaml
+!*.tmpl
 
-# CodeCov
-!codecov.yml
+# Test fixtures
+!**/testdata/**/*.txt
+!**/testdata/**/*.txtar
+!**/testdata/**/*.http
+!**/testdata/**/*.snap
 
-# General
-!README.md
-!LICENSE
-!docs/**/*
-!examples/**/*
-
-# Typos
-!.typos.toml
+# Go fuzz corpus entries are hashes with no extension
+!**/testdata/fuzz/**
 
 # mise
 !mise.toml
 
-# Copier
-!.copier-answers.yml
+# Git
+!/.gitattributes
+!.gitignore
+!/.mailmap
+
+# GitHub Actions
+!.github/**/*.yml
+!.github/**/*.yaml
+!.github/renovate.json
+
+# Tangled
+!.tangled/**/*.yml
+!.tangled/**/*.yaml
+
+# Docs
+!*.tape
+!*.md
+!/README.md
+!/LICENSE
+
+# Docker
+!/Dockerfile
+
+# Nix
+!*.nix
+!/flake.lock
+!/.envrc
+
+# Other
+!/.typos.toml
+!/.copier-answers.yml
 
 # ...even if they are in subdirectories
 !*/
